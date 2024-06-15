@@ -1,13 +1,62 @@
 <!-- 分组柱状图加折线图，混合图 -->
 <template>
-  <div id="container">
-    
+  <div class="home-page">
+    <el-upload class="uploaddemo" @change="uploadChange" :auto-upload="false">
+      <el-button type="primary">点击上传</el-button>
+    </el-upload>
+
+    <div id="container"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { DualAxes } from '@antv/g2plot';
+import * as XLSX from 'xlsx';
+import {ElMessage} from 'element-plus'
+import { isDate } from '@/utils/tools.js'
+
+const uploadChange = (e:any) => {
+  if (e.status !== 'ready') return   // 防止触发两次
+  if (e.length <= 0) {
+    ElMessage.warning('请选择文件')
+  } else if (e.name.split('.')[1] !== 'xlsx') {
+    ElMessage.warning('上传格式不正确，请上传xlsx格式')
+  } else {
+    const file = e.raw
+    // let v = new FormData()
+    // v.append('file', '9999999999')
+    // console.log(v)
+    // const file = e.target.files[0]
+    const reader = new FileReader()
+    reader.readAsArrayBuffer(file)
+    reader.onload = async (ev:any) => {
+      let data = ev.target.result
+      console.log(data, '这里是文件流')
+      const workbook = XLSX.read(data, { type: 'binary', cellDates: true })
+      let sheetLen = workbook.SheetNames
+      console.log('workbook.SheetNames', sheetLen)
+      let list = []
+      for(let i=0;i<sheetLen.length;i++) {
+        const wsname = workbook.SheetNames[i]
+        const getData = XLSX.utils.sheet_to_json(workbook.Sheets[wsname])
+        // console.log('getData', getData)
+        let lineData = []
+        getData.map((item:object) => {
+          if(isDate(item['生产直通率及不良统计日报'])) {
+            lineData.push(item)
+          }
+        })
+        list.push({
+          key: workbook.SheetNames[i],
+          datas: lineData
+        })
+        console.log('newData', list)
+      }
+      
+    }
+  }
+}
 
 onMounted(() => {
   const uvBillData = [

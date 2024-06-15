@@ -9,7 +9,7 @@ import myG2plot3 from '@/views/MyG2plot3.vue'
 const routes = [
   { 
     path: '/', 
-    component: HomeView 
+    component: myG2plot3 
   },
   { 
     path: '/myG2plot', 
