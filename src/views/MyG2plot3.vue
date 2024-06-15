@@ -10,11 +10,30 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref, reactive, toRaw } from 'vue'
 import { DualAxes } from '@antv/g2plot';
 import * as XLSX from 'xlsx';
 import {ElMessage} from 'element-plus'
-import { isDate } from '@/utils/tools.js'
+import { isDate } from '@/utils/tools'
+
+type Sobj = {
+  curDate?:string; // 日期
+  type?: string; // 机型
+  remark?: string; // 备注
+  total?: number; // 总投入量
+  finishedProduct?: number; // 成品
+  defectiveProducts?: number; // 不良品
+  straightThroughRate?: number; // 直通率
+}
+
+interface Listobj {
+  sheetName?:string ;
+  datas?:Array<Sobj>;
+}
+
+let currentList = ref<Listobj[]>([])
+
+let list = ref<Listobj[]>([])
 
 const uploadChange = (e:any) => {
   if (e.status !== 'ready') return   // 防止触发两次
@@ -41,21 +60,45 @@ const uploadChange = (e:any) => {
         const wsname = workbook.SheetNames[i]
         const getData = XLSX.utils.sheet_to_json(workbook.Sheets[wsname])
         // console.log('getData', getData)
-        let lineData = []
-        getData.map((item:object) => {
+        let lineData:Array<object> = []
+        getData.map((item:any) => {
           if(isDate(item['生产直通率及不良统计日报'])) {
-            lineData.push(item)
+            lineData.push(item);
           }
-        })
+        });
         list.push({
-          key: workbook.SheetNames[i],
+          sheetName: workbook.SheetNames[i],
           datas: lineData
         })
-        console.log('newData', list)
       }
-      
+      // console.log('newData', list);
+      currentList.value = list;
+      handleSortData();
     }
   }
+}
+
+const handleSortData = () => {
+  let listarr:Listobj[] = []
+  currentList.value.map((item:Listobj, idx:number):void => {
+    // console.log('ssss', currentList.value);
+    listarr.splice(idx, 0, {sheetName: item.sheetName})
+    const itemDatas = item.datas;
+    itemDatas!.map((curitem:any):void => {
+      let curobj:Sobj = {
+        curDate: curitem.__EMPTY, // 日期
+        type: curitem.__EMPTY_1, // 机型
+        remark: curitem.__EMPTY_2, // 备注
+        total: curitem.__EMPTY_3, // 总投入量
+        finishedProduct: curitem.__EMPTY_4, // 成品
+        defectiveProducts: curitem.__EMPTY_5, // 不良品
+        straightThroughRate: curitem.__EMPTY_6 // 直通率
+      };
+      listarr[idx]!.datas = curobj
+    })
+  })
+  list.value  = listarr
+  console.log('saaaaaa', listarr);
 }
 
 onMounted(() => {

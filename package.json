@@ -11,7 +11,7 @@
   "dependencies": {
     "@antv/g2plot": "^2.4.31",
     "@element-plus/icons-vue": "^2.3.1",
-    "@types/xlsx": "^0.0.36",
+    "@types/xlsx": "^0.0.35",
     "axios": "^1.7.2",
     "echarts": "^5.5.0",
     "element-plus": "^2.7.4",
