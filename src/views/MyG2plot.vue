@@ -24,6 +24,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive, watch, nextTick } from 'vue'
+import SparkMD5 from 'spark-md5'
 import { DualAxes } from '@antv/g2plot';
 import * as XLSX from 'xlsx';
 import {ElMessage} from 'element-plus';
@@ -287,7 +288,23 @@ const paintChart = () => {
   chartInstance.render();
 }
 
+const checkForUpdates = () => {
+  axios.get('http://localhost:3000')
+    .then(() => {
+      // 假设服务器响应表示文件已更新
+      this.lastUpdateTime = new Date().toLocaleTimeString();
+    })
+    .catch((err:any) => {
+      console.error('检查文件更新时出错:', err);
+    });
+}
+
 onMounted(() => {
+  checkForUpdates();
+  setInterval(() => {
+    checkForUpdates();
+  }, 1000); // 每1秒检查一次
+
   console.log('mainStore.getExcels', mainStore.getExcels)
   if(mainStore.getExcels.length > 0) {
     list.value = mainStore.getExcels

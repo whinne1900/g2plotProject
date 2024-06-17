@@ -39,6 +39,10 @@ export default defineConfig(({ mode }) => {
         targets: ['defaults', 'not IE 11'],
       }),
     ],
+    // define这部分应该可以删除，但是我没删，也不报错了
+    define: {
+      'process.env': process.env
+    },
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url))
