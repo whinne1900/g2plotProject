@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "watch": "chokidar '**/*.{vue,js,css}' -c 'node monitorFileChanges.js'"
   },
   "dependencies": {
     "@antv/g2plot": "^2.4.31",
@@ -27,8 +28,10 @@
   "devDependencies": {
     "@iconify-json/ep": "^1.1.15",
     "@types/node": "^20.14.2",
+    "@types/spark-md5": "^3.0.4",
     "@vitejs/plugin-legacy": "^5.4.1",
     "@vitejs/plugin-vue": "^5.0.4",
+    "chokidar-cli": "^3.0.0",
     "sass": "^1.77.4",
     "sass-loader": "^14.2.1",
     "typescript": "^5.2.2",
