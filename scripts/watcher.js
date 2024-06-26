@@ -17,6 +17,12 @@ const parseExcelDate = (excelDate) => {
   return moment(baseDate.getTime() + dateInMs).format('YYYY-MM-DD');
 };
 
+// 判断是否包含中文
+function containsChinese(str) {
+  const chineseRegex = /[\u4e00-\u9fa5]/;
+  return chineseRegex.test(str);
+}
+
 // 要监控的文件路径
 const excelFilePath = path.join(__dirname, '../data/test.xlsx');
 
@@ -34,17 +40,19 @@ watcher.on('change', path => {
 // 读取 Excel 文件内容
 function readExcelFile() {
   console.log('excelFilePath', excelFilePath)
-  const workbook = XLSX.readFile(excelFilePath);
+  // const workbook = XLSX.readFile(excelFilePath);
+  const workbook = XLSX.readFile(excelFilePath, { type: 'binary', cellDates: true });
   let sheetLen = workbook.SheetNames
   let list = []
   for(let i=0;i<sheetLen.length;i++) {
     const wsname = workbook.SheetNames[i]
     const getData = XLSX.utils.sheet_to_json(workbook.Sheets[wsname])
-    for(let key in getData) {
-      if (moment(getData[key], moment.ISO_8601, true).isValid()) {
-        getData[key] = parseExcelDate(getData[key])
+    let lineData = []
+    getData.map((item, idx) => {
+      if (moment(getData[idx], moment.ISO_8601, true).isValid()) {
+        getData[idx] = moment(getData[idx]).format('YYYY-MM-DD'); // parseExcelDate(getData[key])
       }
-    }
+    })
     list.push({
       sheetName: workbook.SheetNames[i],
       datas: getData

@@ -96,7 +96,7 @@ const fetchExcelData = async () => {
       })
       let lineData:Array<object> = []
       excelData[i].datas.map((item:any) => {
-        if(isDate(item['生产直通率及不良统计日报']) || isNumber(item['生产直通率及不良统计日报'])) {
+        if(isDate(item['生产直通率及不良统计日报'])) {
           lineData.push(item);
         }
       });
