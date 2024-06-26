@@ -1,4 +1,6 @@
-import { P } from "@antv/g2plot";
+export const isNumber = (value:any):boolean => {
+  return Object.prototype.toString.call(value) === '[object Number]';
+}
 
 export const isDate = (value:object):boolean => {
   return Object.prototype.toString.call(value) === '[object Date]';

@@ -23,12 +23,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, reactive, watch, nextTick } from 'vue'
-import SparkMD5 from 'spark-md5'
+import { onMounted, ref, watch, nextTick } from 'vue'
+// import SparkMD5 from 'spark-md5'
 import { DualAxes } from '@antv/g2plot';
 import * as XLSX from 'xlsx';
 import {ElMessage} from 'element-plus';
-import { isDate, formatDate, getMonthAndDate } from '@/utils/tools';
+import { isNumber, isDate, formatDate, getMonthAndDate } from '@/utils/tools';
 import { useStore } from "@/store/index";
 const mainStore = useStore();
 
@@ -51,6 +51,7 @@ interface monthobj {
   value:string;
 }
 
+let excelData = null
 let chartInstance:any = null;
 const chartContainer = ref(null);
 let selectMonth = ref('')
@@ -80,6 +81,37 @@ watch(
     }
   }
 )
+
+const fetchExcelData = async () => {
+  const response = await fetch('../data/excel-data.json');
+  excelData = await response.json();
+  console.log('fetchExcelData===excelData', excelData)
+  if(excelData.length > 0) {
+    monthList.value.length = 0
+    let list:Array<object> = []
+    for(let i=0;i<excelData.length;i++) {
+      monthList.value.push({
+        label: excelData[i].sheetName,
+        value: excelData[i].sheetName
+      })
+      let lineData:Array<object> = []
+      excelData[i].datas.map((item:any) => {
+        if(isDate(item['生产直通率及不良统计日报']) || isNumber(item['生产直通率及不良统计日报'])) {
+          lineData.push(item);
+        }
+      });
+      selectMonth.value = monthList.value[0]!.value
+      mainStore.setMonthlist(monthList.value)
+      mainStore.setCurrent(selectMonth.value)
+      list.push({
+        sheetName: excelData[i].sheetName,
+        datas: lineData
+      })
+    }
+    currentList.value = list;
+    handleSortData();
+  }
+}
 
 const handleChartData = () => {
   let totalData:any = [];
@@ -288,36 +320,26 @@ const paintChart = () => {
   chartInstance.render();
 }
 
-const checkForUpdates = () => {
-  axios.get('http://localhost:3000')
-    .then(() => {
-      // 假设服务器响应表示文件已更新
-      this.lastUpdateTime = new Date().toLocaleTimeString();
-    })
-    .catch((err:any) => {
-      console.error('检查文件更新时出错:', err);
-    });
-}
-
 onMounted(() => {
-  checkForUpdates();
-  setInterval(() => {
-    checkForUpdates();
-  }, 1000); // 每1秒检查一次
-
-  console.log('mainStore.getExcels', mainStore.getExcels)
-  if(mainStore.getExcels.length > 0) {
-    list.value = mainStore.getExcels
-  }
-  if(mainStore.getMonthlist.length > 0) {
-    monthList.value = mainStore.getMonthlist
-  }
+  // console.log('mainStore.getExcels', mainStore.getExcels)
+  // if(mainStore.getExcels.length > 0) {
+  //   list.value = mainStore.getExcels
+  // }
+  // if(mainStore.getMonthlist.length > 0) {
+  //   monthList.value = mainStore.getMonthlist
+  // }
   
   nextTick(() => {
     paintChart()
     if(mainStore.getCurrent) {
       selectMonth.value = mainStore.getCurrent
     }
+
+    // 每个1s刷新一次数据
+    // setInterval(() => {
+    //   fetchExcelData()
+    // }, 1000)
+    fetchExcelData()
   })
 })
 </script>
