@@ -107,16 +107,6 @@ const routes = [
 				/** 在src/views 文件下创建information文件 */
 				component: () => import("@/views/operation/index.vue"),
 			},
-      {
-				path: "/conLog",
-				name: "conLog",
-				meta: {
-					title: '登录日志',
-					icon: 'Document'
-				},
-				/** 在src/views 文件下创建information文件 */
-				component: () => import("@/views/conLog/index.vue"),
-			},
 			{
 				path: "/setting",
 				name: "setting",
