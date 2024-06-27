@@ -7,6 +7,20 @@ import moment from 'moment';
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
+// 检查是否为有效日期
+function isValidDate(date) {
+  return !isNaN(Date.parse(date));
+}
+
+// 格式化日期为 YYYY-MM-DD
+function formatDate(date) {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // 手动解析日期字段
 const parseExcelDate = (excelDate) => {
   // Excel 序列号日期从 1900-01-01 开始
@@ -37,22 +51,27 @@ watcher.on('change', path => {
   readExcelFile();
 });
 
+// 在使用 xlsx 库将 Excel 工作表转换为 JSON 时，默认情况下日期会被转换为字符串或整数（Excel 日期序列号）。为了防止日期格式转换为整数，你可以使用 raw 选项来确保所有单元格内容都保持原始格式（即字符串格式）。
 // 读取 Excel 文件内容
 function readExcelFile() {
   console.log('excelFilePath', excelFilePath)
-  // const workbook = XLSX.readFile(excelFilePath);
-  const workbook = XLSX.readFile(excelFilePath, { type: 'binary', cellDates: true });
+  const workbook = XLSX.readFile(excelFilePath);
+  // const workbook = XLSX.readFile(excelFilePath, { type: 'binary', cellDates: true });
   let sheetLen = workbook.SheetNames
   let list = []
   for(let i=0;i<sheetLen.length;i++) {
     const wsname = workbook.SheetNames[i]
-    const getData = XLSX.utils.sheet_to_json(workbook.Sheets[wsname])
-    let lineData = []
-    getData.map((item, idx) => {
-      if (moment(getData[idx], moment.ISO_8601, true).isValid()) {
-        getData[idx] = moment(getData[idx]).format('YYYY-MM-DD'); // parseExcelDate(getData[key])
-      }
+    const getData = XLSX.utils.sheet_to_json(workbook.Sheets[wsname], {
+      raw: false, // 保持单元格内容的原始格式
+      cellDates: true, // 保留日期格式
     })
+    
+    // 提取包含时间格式数据的行
+    // let rowsWithDates = []
+    // rowsWithDates = getData.filter(row => {
+    //   return Object.values(row).some(value => isValidDate(value));
+    // });
+
     list.push({
       sheetName: workbook.SheetNames[i],
       datas: getData
